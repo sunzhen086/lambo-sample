@@ -237,7 +237,7 @@
 						<contextPath>/lambo</contextPath>
 					</webApp>
 					<httpConnector>
-						<port>8888</port>
+						<port>8881</port>
 					</httpConnector>
 					<reload>automatic</reload>
 				</configuration>

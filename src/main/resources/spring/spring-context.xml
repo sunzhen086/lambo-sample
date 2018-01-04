@@ -20,7 +20,7 @@
 	<task:annotation-driven />
 
 	<!-- 扫描定时器相关类 -->
-	<!-- <context:component-scan base-package="com.inspur.lambo.**.scheduler" /> -->
+	<context:component-scan base-package="com.soecode.lyf.scheduler" /> <!--,com.inspur.irtda.scheduler-->
 	
 	<!-- 支持自定义注解 -->
 	<aop:aspectj-autoproxy />

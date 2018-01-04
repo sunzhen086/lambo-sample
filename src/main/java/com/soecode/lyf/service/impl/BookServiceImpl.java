@@ -41,7 +41,8 @@ public class BookServiceImpl implements BookService {
 	}
 
 	@Override
-	@DataSource("datasource1")
+	@DataSource("datasource2")
+	@Transactional
 	public List<Book> getList() {
 		return bookDao.queryAll(0, 1000);
 	}

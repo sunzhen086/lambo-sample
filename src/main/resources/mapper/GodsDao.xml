@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.inspur.irtda.dao.GodsDao">
+	<update id="getDayGoodShot" parameterType="Map">
+		CREATE VIEW IRT_GOODSHOT_SALE_VIEW AS (
+		SELECT D.BARCODE,
+			COALESCE(D.ORG_CODE,'00') ORG_CODE,
+			MAX(M.GODS_NAME) GODS_NAME,
+			MAX(M.IMG_PATH) IMG_PATH,
+			SUM(SALE_MNY) SALE_MNY
+		FROM RDC_MALL_GOODS_DAY D, PUB_MALLGOODSINFO M
+		WHERE D.ORG_CODE=M.ORG_CODE
+		AND D.BARCODE=M.BARCODE
+		AND D.SALES_DATE=#{paramMap.DATE}
+		AND D.SORT_ID BETWEEN #{paramMap.SORT_ID_START} AND #{paramMap.SORT_ID_END}
+		GROUP BY D.BARCODE, D.ORG_CODE WITH ROLLUP
+		HAVING D.BARCODE IS NOT NULL)
+	</update>
+
+	<update id="getMonthGoodShot" parameterType="Map">
+		CREATE VIEW IRT_GOODSHOT_SALE_VIEW AS (
+		SELECT D.BARCODE,
+			COALESCE(D.ORG_CODE,'00') ORG_CODE,
+			MAX(M.GODS_NAME) GODS_NAME,
+			MAX(M.IMG_PATH) IMG_PATH,
+			SUM(SALE_MNY) SALE_MNY
+		FROM RDC_MALL_GOODS_MONTH D, PUB_MALLGOODSINFO M
+		WHERE D.ORG_CODE=M.ORG_CODE
+		AND D.BARCODE=M.BARCODE
+		AND D.SALES_MONTH=#{paramMap.DATE}
+		AND D.SORT_ID BETWEEN #{paramMap.SORT_ID_START} AND #{paramMap.SORT_ID_END}
+		GROUP BY D.BARCODE, D.ORG_CODE WITH ROLLUP
+		HAVING D.BARCODE IS NOT NULL)
+	</update>
+
+	<update id="getYearGoodShot" parameterType="Map">
+		CREATE VIEW IRT_GOODSHOT_SALE_VIEW AS (
+		SELECT D.BARCODE,
+			COALESCE(D.ORG_CODE,'00') ORG_CODE,
+			MAX(M.GODS_NAME) GODS_NAME,
+			MAX(M.IMG_PATH) IMG_PATH,
+			SUM(SALE_MNY) SALE_MNY
+		FROM RDC_MALL_GOODS_MONTH D, PUB_MALLGOODSINFO M
+		WHERE D.ORG_CODE=M.ORG_CODE
+		AND D.BARCODE=M.BARCODE
+		AND D.SALES_MONTH>=#{paramMap.DATE}
+		AND D.SORT_ID BETWEEN #{paramMap.SORT_ID_START} AND #{paramMap.SORT_ID_END}
+		GROUP BY D.BARCODE, D.ORG_CODE WITH ROLLUP
+		HAVING D.BARCODE IS NOT NULL)
+	</update>
+
+	<update id="dropGoodShotView">
+		DROP VIEW IRT_GOODSHOT_SALE_VIEW
+	</update>
+
+	<select id="getGoodShot" resultType="Map" parameterType="Map">
+		SELECT *
+		FROM IRT_GOODSHOT_SALE_VIEW A
+		WHERE (SELECT COUNT(*)
+			FROM IRT_GOODSHOT_SALE_VIEW B
+			WHERE B.ORG_CODE = A.ORG_CODE
+		<![CDATA[	AND   B.SALE_MNY > A.SALE_MNY) < 10 ]]>
+		ORDER BY ORG_CODE ASC, SALE_MNY DESC
+	</select>
+
+	<delete id="deleteGoodShot"  parameterType="Map">
+		DELETE FROM IRT_GOODSHOT_SALE WHERE PERIOD = #{paramMap.PERIOD} AND TYPE = #{paramMap.TYPE}
+	</delete>
+
+	<insert id="insertGoodShot" parameterType="List">
+		INSERT INTO IRT_GOODSHOT_SALE
+		(
+			ORG_CODE,
+			PERIOD,
+			TYPE,
+			GODS_NAME,
+			BAR_CODE,
+			IMG_PATH
+		)
+		VALUES
+		<foreach collection ="list" item="item" index= "index" separator =",">
+			(
+				#{item.ORG_CODE},
+				#{item.PERIOD},
+				#{item.TYPE},
+				#{item.GODS_NAME},
+				#{item.BARCODE},
+				#{item.IMG_PATH}
+			)
+		</foreach >
+	</insert>
+</mapper>
